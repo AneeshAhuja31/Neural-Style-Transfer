@@ -1,5 +1,3 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import streamlit as st
 from PIL import Image
 from neural_style_transfer import load_preprocess_img,get_model,tf,compute_total_loss,deprocess_img,image_to_bytes
