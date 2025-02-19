@@ -12,8 +12,8 @@ def main():
         content_img = Image.open(content_img_file).resize((400,400))
         style_img = Image.open(style_img_file).resize((400,400))
 
-        st.image(content_img,caption="Content Image",use_column_width=True)
-        st.image(style_img,caption="Style Image",use_column_width=True)
+        st.image(content_img,caption="Content Image",use_container_width=True)
+        st.image(style_img,caption="Style Image",use_container_width=True)
 
         content_img_preprocessed = load_preprocess_img(content_img)
         style_img_preprocessed = load_preprocess_img(style_img)
