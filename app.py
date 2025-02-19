@@ -1,10 +1,10 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 import streamlit as st
 from PIL import Image
 from neural_style_transfer import load_preprocess_img,get_model,tf,compute_total_loss,deprocess_img,image_to_bytes
-
 def main():
     st.title("Neural Style Transfer")
-
     content_img_file = st.file_uploader("Upload Content Image",type=['jpg','jpeg','png'])
     style_img_file = st.file_uploader("Upload Style Image",type=['jpg','jpeg','png'])
 
