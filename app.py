@@ -1,6 +1,8 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["XLA_FLAGS"] = "--xla_gpu_cuda_data_dir=/dev/null"
+
 import streamlit as st
 from PIL import Image
 #from neural_style_transfer import load_preprocess_img,get_model,tf,compute_total_loss,deprocess_img,image_to_bytes
