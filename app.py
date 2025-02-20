@@ -6,7 +6,7 @@
 import streamlit as st
 from PIL import Image
 # from keras.api.models import load_model
-from keras.api.saving import load_model
+from keras.saving import load_model
 
 
 from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss,tf
