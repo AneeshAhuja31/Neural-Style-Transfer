@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
 from keras.applications import vgg19  #pretrained VGG19 model
 from keras.preprocessing.image import load_img,img_to_array
 # from keras.api.models import Model
