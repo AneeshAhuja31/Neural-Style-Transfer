@@ -1,7 +1,7 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-os.environ["XLA_FLAGS"] = "--xla_gpu_cuda_data_dir=/dev/null"
+# import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+# os.environ["XLA_FLAGS"] = "--xla_gpu_cuda_data_dir=/dev/null"
 
 import streamlit as st
 from PIL import Image
