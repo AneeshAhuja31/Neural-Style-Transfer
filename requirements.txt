@@ -3,3 +3,4 @@ keras==3.0.0
 numpy
 pillow
 streamlit
+contourpy>=1.0.0
