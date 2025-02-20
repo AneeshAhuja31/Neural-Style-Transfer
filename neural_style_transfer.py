@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from keras.api.applications import vgg19  #pretrained VGG19 model
 from keras.api.preprocessing.image import load_img,img_to_array
 # from keras.api.models import Model
-import keras.api.backend as K
 from io import BytesIO
 from PIL import Image 
 
