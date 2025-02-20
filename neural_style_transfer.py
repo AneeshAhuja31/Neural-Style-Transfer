@@ -1,3 +1,6 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
 import tensorflow as tf
 import numpy as np
 from keras.applications import vgg19  #pretrained VGG19 model
