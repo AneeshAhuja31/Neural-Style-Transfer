@@ -5,8 +5,8 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow warnings
 
 import tensorflow as tf
 import numpy as np
-from keras.applications import vgg19  #pretrained VGG19 model
-from keras.preprocessing.image import load_img,img_to_array
+from keras.api.applications import vgg19  #pretrained VGG19 model
+from keras.api.preprocessing.image import load_img,img_to_array
 # from keras.api.models import Model
 from io import BytesIO
 from PIL import Image 
