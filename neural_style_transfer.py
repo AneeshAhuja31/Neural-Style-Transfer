@@ -37,7 +37,7 @@ def deprocess_img(img):
     return img
 
 content_layer = 'block5_conv2' #deep layer that captures content features
-style_layers = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1','block5_conv1'] #shallow and deep layers that capture different artistic details
+style_layers = ['block1_conv1','block2_conv1','block3_conv1'] #shallow and deep layers that capture different artistic details
 
 # def get_model(saved_path = "vgg19_model"):
 #     vgg = vgg19.VGG19(weights='imagenet',include_top=False) #we have removed the final fully connected layers
