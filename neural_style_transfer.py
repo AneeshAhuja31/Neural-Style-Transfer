@@ -5,7 +5,10 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow warnings
 
 import tensorflow as tf
 import numpy as np
-import cv2
+from cv2 import (
+    cvtColor, calcHist, LUT, COLOR_RGB2LAB, COLOR_LAB2RGB,
+    split, merge, HISTCMP_CORREL
+)
 from keras.api.applications import vgg19  #pretrained VGG19 model
 from keras.api.preprocessing.image import load_img,img_to_array
 # from keras.api.models import Model
@@ -107,6 +110,7 @@ def match_histograms(source, reference):
     # """
 
     # Convert to numpy arrays if necessary
+    # Convert to numpy arrays if necessary
     if isinstance(source, Image.Image):
         source = np.array(source)
     if isinstance(reference, Image.Image):
@@ -116,13 +120,13 @@ def match_histograms(source, reference):
     src_float = np.clip(source, 0, 255).astype(np.uint8)
     ref_float = np.clip(reference, 0, 255).astype(np.uint8)
 
-    # Convert to LAB color space (better for color matching)
-    src_lab = cv2.cvtColor(src_float, cv2.COLOR_RGB2LAB)
-    ref_lab = cv2.cvtColor(ref_float, cv2.COLOR_RGB2LAB)
+    # Convert to LAB color space
+    src_lab = cvtColor(src_float, COLOR_RGB2LAB)
+    ref_lab = cvtColor(ref_float, COLOR_RGB2LAB)
 
     # Split into channels
-    src_l, src_a, src_b = cv2.split(src_lab)
-    ref_l, ref_a, ref_b = cv2.split(ref_lab)
+    src_l, src_a, src_b = split(src_lab)
+    ref_l, ref_a, ref_b = split(ref_lab)
 
     # Match histograms for each channel
     matched_l = match_channel_histogram(src_l, ref_l)
@@ -130,15 +134,14 @@ def match_histograms(source, reference):
     matched_b = match_channel_histogram(src_b, ref_b)
 
     # Merge channels back
-    matched_lab = cv2.merge([matched_l, matched_a, matched_b])
-
-    # Convert matched_lab to uint8 before color conversion
+    matched_lab = merge([matched_l, matched_a, matched_b])
     matched_lab = matched_lab.astype(np.uint8)
 
     # Convert back to RGB
-    matched_rgb = cv2.cvtColor(matched_lab, cv2.COLOR_LAB2RGB)
+    matched_rgb = cvtColor(matched_lab, COLOR_LAB2RGB)
 
     return np.clip(matched_rgb, 0, 255).astype(np.uint8)
+
 
 def match_channel_histogram(source, reference):
     # """
@@ -152,8 +155,8 @@ def match_channel_histogram(source, reference):
     #     numpy.ndarray: The source image channel with the histogram matched to the reference.
     # """
     # Compute histograms
-    source_hist = cv2.calcHist([source], [0], None, [256], [0, 256])
-    reference_hist = cv2.calcHist([reference], [0], None, [256], [0, 256])
+    source_hist = calcHist([source], [0], None, [256], [0, 256])
+    reference_hist = calcHist([reference], [0], None, [256], [0, 256])
 
     # Compute cumulative distribution function
     source_cdf = source_hist.cumsum()
@@ -164,7 +167,7 @@ def match_channel_histogram(source, reference):
     reference_cdf = reference_cdf / reference_cdf[-1]
 
     # Create mapping function
-    lookup_table = np.interp(source_cdf, reference_cdf, np.arange(256))
+    lookup_table = np.interp(source_cdf.flatten(), reference_cdf.flatten(), np.arange(256))
 
     # Apply mapping to source image
-    return cv2.LUT(source, lookup_table.astype(np.uint8))
+    return LUT(source, lookup_table.astype(np.uint8))
