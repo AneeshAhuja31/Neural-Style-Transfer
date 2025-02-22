@@ -23,7 +23,7 @@ def load_preprocess_img(img_path):
     if img.mode not in ['RGB', 'RGBA']:
         img = img.convert('RGB')
     
-    if img.mode == 'RGBA':
+    elif img.mode == 'RGBA':
         img = img.convert('RGB')
     img = img_to_array(img) 
     img = np.expand_dims(img,axis=0) # After adding batch dimension: (400, 400, 3) --> (1, 400, 400, 3)
