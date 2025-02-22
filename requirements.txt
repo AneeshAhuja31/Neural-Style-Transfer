@@ -4,3 +4,4 @@ numpy>=1.19.2
 pillow>=9.0.0
 streamlit>=1.22.0
 contourpy>=1.0.0
+cv2

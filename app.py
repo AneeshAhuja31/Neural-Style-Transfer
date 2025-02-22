@@ -18,7 +18,7 @@ from model_creation import get_model
 def load_model():
    return get_model()
 
-from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss
+from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss,enhance_contrast,match_histograms,np
 def main():
   st.title("Neural Style Transfer")
   content_img_file = st.file_uploader("Upload Content Image",type=['jpg','jpeg','png'])
@@ -31,6 +31,11 @@ def main():
     st.image(content_img,caption="Content Image",use_container_width=True)
     st.image(style_img,caption="Style Image",use_container_width=True)
 
+    rgb_or_rgba = content_img.mode == "RGBA"
+    original_alpha = None
+    if rgb_or_rgba:
+       original_alpha = np.array(content_img.split()[3])
+
     content_img_preprocessed = load_preprocess_img(content_img)
     style_img_preprocessed = load_preprocess_img(style_img)
 
@@ -41,25 +46,61 @@ def main():
     generated_img = tf.Variable(content_img_preprocessed,dtype=tf.float32)
     optimizer = tf.optimizers.Adam(learning_rate=5.0)
 
-    epochs = 50  # Reduce epochs for Streamlit deployment
+    epochs = 50 # Reduce epochs for Streamlit deployment
+    first_phase_epochs = 25
     progress_bar = st.progress(0)
     status_text = st.empty()
 
-    for i in range(epochs):
+    for i in range(first_phase_epochs):
       with tf.GradientTape() as tape:
-          loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img)
+        loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.2, beta=3e3)
       grad = tape.gradient(loss, generated_img)
       optimizer.apply_gradients([(grad, generated_img)])
 
     # Clear memory
+      print(f"Iteration {i}, loss: {loss.numpy()}")
       if i % 10 == 0:
         tf.keras.backend.clear_session()
-        progress_bar.progress((i + 1)/epochs)
+        progress_bar.progress((i+1)/epochs)
         status_text.text(f"Iteration {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
     
-    final_img = deprocess_img(generated_img.numpy())
-    st.image(final_img,caption="Generated Image",use_column_width=True)
-    st.download_button(label="Download Generated Image",data=image_to_bytes(final_img),file_name="generated_image.jpg",mime="image/jpeg")
+    for i in range(25,50):
+      with tf.GradientTape() as tape:
+        loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.8,beta=1e3)
+
+      grad = tape.gradient(loss,generated_img)
+      optimizer.apply_gradients([(grad,generated_img)])
+      
+      print(f"Refinement phase: {i}, loss: {loss.numpy()}")
+      if i%10==0:
+         tf.keras.backend.clear_session()
+         progress_bar.progress((i+1)/epochs)
+         status_text.text(f"Refinement phase: {i+1}/100, Loss: {loss.numpy():.2f}")
+    
+    final_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
+    #Apply style color matching
+    style_array = np.array(style_img.convert('RGB'))
+
+    # Make sure images are converted to numpy arrays before histogram matching
+    final_img_arr = np.array(final_img.convert('RGB'))
+    
+    final_img_arr = match_histograms(final_img_arr,style_array)
+
+    #Enhance contrast
+    final_img_arr_enhanced = enhance_contrast(final_img_arr,factor=1.3)
+    final_img = Image.fromarray(final_img_arr_enhanced)
+    if rgb_or_rgba and original_alpha is not None:
+       final_img = final_img.convert("RGBA")
+       original_alpha_img = Image.fromarray(original_alpha,"L")
+       final_img.putalpha(original_alpha_img)
+       
+    st.image(final_img,caption="Generated Image",use_container_width=True)
+    format_type = "PNG" if rgb_or_rgba else "JPEG"
+    st.download_button(
+       label="Download Generated Image",
+       data=image_to_bytes(final_img,format=format_type),
+       file_name=f"generated_image.{format_type.lower()}",
+       mime=f"image/{format_type.lower()}")
 
 if __name__ == "__main__":
     main()
