@@ -54,8 +54,8 @@ def main():
     preview_img = st.empty()
 
     for batch_start in range(0,epochs//2,batch_size):
-      tf.keras.backend.clear_session()
-      model = load_model()
+      # tf.keras.backend.clear_session()
+      # model = load_model()
       batch_end = min(batch_start+batch_size,epochs//2)
       for i in range(batch_start,batch_end):
         #try:
