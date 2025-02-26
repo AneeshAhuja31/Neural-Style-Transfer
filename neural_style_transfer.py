@@ -61,7 +61,7 @@ def deprocess_img(img,rgb_or_rgba,original_alpha=None):
     return img
 
 content_layer = 'block5_conv2' #deep layer that captures content features
-style_layers = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1','block5_conv1'] #shallow and deep layers that capture different artistic details
+style_layers = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1'] #shallow and deep layers that capture different artistic details
 
 
 def compute_content_loss(content,generated):
