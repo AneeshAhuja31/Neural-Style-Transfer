@@ -136,8 +136,11 @@ def main():
         alpha_img = alpha_img.resize((IMAGE_SIZE,IMAGE_SIZE),Image.LANCZOS)
         final_img = final_img.convert("RGBA")
         final_img.putalpha(alpha_img)
-        
-      st.image(final_img,caption="Generated Image",use_container_width=True)
+
+      preview_placeholder.empty()
+      with col3:
+        st.image(final_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Result Image")
+      #st.image(final_img,caption="Generated Image",use_container_width=True)
       format_type = "PNG" if rgb_or_rgba else "JPEG"
       st.download_button(
         label="Download Generated Image",
