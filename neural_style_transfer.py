@@ -34,7 +34,7 @@ def load_preprocess_img(img_path):
     #img = vgg19.preprocess_input(img) #Normalize image for vgg19
     #return img
     # Manual preprocessing like VGG19
-    img_array = img_array.astype(np.float32)
+    img_array = img.astype(np.float32)
     img_array[:, :, :, 0] -= 103.939  # Subtract mean R
     img_array[:, :, :, 1] -= 116.779  # Subtract mean G
     img_array[:, :, :, 2] -= 123.68   # Subtract mean B
@@ -70,7 +70,7 @@ def deprocess_img(img,rgb_or_rgba,original_alpha=None):
 
 CONTENT_LAYERS = 'block5_conv2' #deep layer that captures content features
 STYLE_LAYERS = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1','block5_conv1'] #shallow and deep layers that capture different artistic details
-STYLE_WEIGHTS = [1.0, 0.8, 0.6, 0.4, 0.2]
+STYLE_WEIGHTS = [2.0, 1.6, 1.2, 0.8, 0.4]
 
 def compute_content_loss(content,generated):
     return tf.reduce_mean(tf.square(content-generated)) #mena squared error
