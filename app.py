@@ -60,6 +60,7 @@ def main():
       status_text = st.empty()
       # preview_img = st.empty()
       
+      preview_placeholder = col3.empty()  # Create an empty placeholder for preview image
 
       for batch_start in range(0,epochs//2,batch_size):
         # tf.keras.backend.clear_session()
@@ -81,8 +82,9 @@ def main():
             if i % 5 == 0:
               preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
               #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
+              preview_placeholder.empty()
               with col3:
-                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Style Image")
+                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
 
               #tf.keras.backend.clear_session()
           # except Exception as e:
@@ -107,8 +109,9 @@ def main():
             if i % 5 == 0:
               preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
               #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
+              preview_placeholder.empty()
               with col3:
-                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Style Image")
+                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
 
           # except Exception as e:
           #   print(f"Error in iteration {i}: {e}")
