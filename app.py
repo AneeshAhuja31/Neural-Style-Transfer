@@ -47,14 +47,14 @@ def main():
     optimizer = tf.optimizers.Adam(learning_rate=10.0)
 
     batch_size = 5
-    epochs = 50 # Reduce epochs for Streamlit deployment
+    epochs = 30 # Reduce epochs for Streamlit deployment
     progress_bar = st.progress(0)
     status_text = st.empty()
 
-    for batch_start in range(0,15,batch_size):
+    for batch_start in range(0,epochs//2,batch_size):
       tf.keras.backend.clear_session()
       model = load_model()
-      batch_end = min(batch_start+batch_size,15)
+      batch_end = min(batch_start+batch_size,epochs//2)
       for i in range(batch_start,batch_end):
         try:
           with tf.GradientTape() as tape:
@@ -72,10 +72,10 @@ def main():
         except Exception as e:
           print(f"Error in iteration {i}: {e}")
           continue
-    for batch_start in range(15,30,batch_size):
+    for batch_start in range(epochs//2,epochs,batch_size):
       tf.keras.backend.clear_session()
       model = load_model()
-      batch_end = min(batch_start + batch_size,30)
+      batch_end = min(batch_start + batch_size,epochs)
       for i in range(batch_start,batch_end):
         try:
           with tf.GradientTape() as tape:
