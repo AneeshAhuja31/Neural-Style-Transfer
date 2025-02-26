@@ -58,7 +58,8 @@ def main():
       for i in range(batch_start,batch_end):
         try:
           with tf.GradientTape() as tape:
-            loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.2, beta=3e3)
+            gamma = max(30 - (i//5),10)
+            loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.1, beta=5e3,gamma=gamma)
           grad = tape.gradient(loss, generated_img)
           optimizer.apply_gradients([(grad, generated_img)])
         
@@ -79,7 +80,8 @@ def main():
       for i in range(batch_start,batch_end):
         try:
           with tf.GradientTape() as tape:
-            loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.8,beta=1e3)
+            gamma = max(30-(i//5),10)
+            loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=1.0,beta=2e3,gamma=gamma)
 
           grad = tape.gradient(loss,generated_img)
           optimizer.apply_gradients([(grad,generated_img)])
@@ -103,7 +105,7 @@ def main():
     final_img_arr = match_histograms(final_img_arr,style_array)
 
     #Enhance contrast
-    final_img_arr_enhanced = enhance_contrast(final_img_arr,factor=1.3)
+    final_img_arr_enhanced = enhance_contrast(final_img_arr,factor=1.5)
     final_img = Image.fromarray(final_img_arr_enhanced)
     if rgb_or_rgba and original_alpha is not None:
        final_img = final_img.convert("RGBA")
