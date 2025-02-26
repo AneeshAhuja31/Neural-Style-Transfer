@@ -58,10 +58,8 @@ def main():
       epochs = 20 # Reduce epochs for Streamlit deployment
       progress_bar = st.progress(0)
       status_text = st.empty()
-      preview_img = st.empty()
-      with col3:
-        st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in Progess..")
-
+      # preview_img = st.empty()
+      
 
       for batch_start in range(0,epochs//2,batch_size):
         # tf.keras.backend.clear_session()
@@ -81,8 +79,10 @@ def main():
 
             # Clear memory
             if i % 5 == 0:
-              preview = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
-              preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
+              preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
+              #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
+              with col3:
+                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Style Image")
 
               #tf.keras.backend.clear_session()
           # except Exception as e:
@@ -105,9 +105,11 @@ def main():
             progress_bar.progress((i+1)/epochs)
             status_text.text(f"Refinement phase: {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
             if i % 5 == 0:
-              preview = deprocess_img(generated_img.numpy(), rgb_or_rgba, original_alpha)
-              preview_img.image(preview, caption="Preview (Refinement)", use_container_width=True)
-              tf.keras.backend.clear_session()
+              preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
+              #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
+              with col3:
+                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Style Image")
+
           # except Exception as e:
           #   print(f"Error in iteration {i}: {e}")
           #   continue
