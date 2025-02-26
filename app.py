@@ -51,7 +51,7 @@ def main():
     progress_bar = st.progress(0)
     status_text = st.empty()
 
-    for batch_start in range(0,epochs/2,batch_size):
+    for batch_start in range(0,epochs//2,batch_size):
       tf.keras.backend.clear_session()
       model = load_model()
       batch_end = min(batch_start+batch_size,epochs/2)
@@ -72,22 +72,26 @@ def main():
         except Exception as e:
           print(f"Error in iteration {i}: {e}")
           continue
-    for batch_start in range(epochs/2,epochs,batch_size):
+    for batch_start in range(0,epochs//2,epochs,batch_size):
       tf.keras.backend.clear_session()
       model = load_model()
       batch_end = min(batch_start + batch_size,epochs)
       for i in range(batch_start,batch_end):
-        with tf.GradientTape() as tape:
-          loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.8,beta=1e3)
+        try:
+          with tf.GradientTape() as tape:
+            loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.8,beta=1e3)
 
-        grad = tape.gradient(loss,generated_img)
-        optimizer.apply_gradients([(grad,generated_img)])
-        
-        print(f"Refinement phase: {i}, loss: {loss.numpy()}")
-        progress_bar.progress((i+1)/epochs)
-        status_text.text(f"Refinement phase: {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
-        if i % 5 == 0:
-          tf.keras.backend.clear_session()
+          grad = tape.gradient(loss,generated_img)
+          optimizer.apply_gradients([(grad,generated_img)])
+          
+          print(f"Refinement phase: {i}, loss: {loss.numpy()}")
+          progress_bar.progress((i+1)/epochs)
+          status_text.text(f"Refinement phase: {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
+          if i % 5 == 0:
+            tf.keras.backend.clear_session()
+        except Exception as e:
+          print(f"Error in iteration {i}: {e}")
+          continue
     
     final_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
     #Apply style color matching
