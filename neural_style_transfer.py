@@ -7,14 +7,15 @@ import tensorflow as tf
 import numpy as np
 from cv2 import (
     cvtColor, calcHist, LUT, COLOR_RGB2LAB, COLOR_LAB2RGB,
-    split, merge, HISTCMP_CORREL
+    split, merge, HISTCMP_CORREL, GaussianBlur, detailEnhance
 )
 from keras.api.applications import vgg19  #pretrained VGG19 model
 from keras.api.preprocessing.image import load_img,img_to_array
 # from keras.api.models import Model
 from io import BytesIO
-from PIL import Image,ImageEnhance
+from PIL import Image,ImageEnhance, ImageFilter
 
+IMAGE_SIZE = 512
 
 def load_preprocess_img(img_path):
     if isinstance(img_path,Image.Image):
@@ -34,14 +35,14 @@ def load_preprocess_img(img_path):
     return img
 
 
-def image_to_bytes(img,format="JPEG"):
+def image_to_bytes(img,format="JPEG",quality=95):
     img_byte_arr = BytesIO()
-    img.save(img_byte_arr,format=format)
+    img.save(img_byte_arr,format=format,quality=quality)
     img_byte_arr = img_byte_arr.getvalue()
     return img_byte_arr
 
 def deprocess_img(img,rgb_or_rgba,original_alpha=None):
-    img = img.reshape((400,400,3)).astype('float32') #convert to 400x400x3
+    img = img.reshape((IMAGE_SIZE,IMAGE_SIZE,3)).astype('float32') #convert to 400x400x3
     img[:,:,0] += 103.939 #red channel
     img[:,:,1] += 116.779 #green channel
     img[:,:,2] += 123.68 #blue channel
@@ -49,12 +50,17 @@ def deprocess_img(img,rgb_or_rgba,original_alpha=None):
     
     img = Image.fromarray(img,"RGB")
     if rgb_or_rgba and original_alpha is not None:
+        #resize alpha channel if needed
+        if original_alpha.shape[0] != IMAGE_SIZE or original_alpha.shape[1] != IMAGE_SIZE:
+            alpha_img = Image.fromarray(original_alpha,'L')
+            alpha_img =  alpha_img.resize((IMAGE_SIZE,IMAGE_SIZE),Image.LANCZOS)
+            original_alpha = np.array(alpha_img)
         img = img.convert("RGBA")
         original_alpha_img = Image.fromarray(original_alpha,"L")
         img.putalpha(original_alpha_img)
     return img
 
-content_layer = 'block4_conv2' #deep layer that captures content features
+content_layer = 'block5_conv2' #deep layer that captures content features
 style_layers = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1','block5_conv1'] #shallow and deep layers that capture different artistic details
 
 
@@ -87,10 +93,12 @@ def compute_total_loss(model,content_img,style_img,generated_img,alpha=0.5,beta=
     content_loss = compute_content_loss(content_features,generated_content_features)
 
     style_loss = 0
-    for layer in style_layers:
+    style_weights = [1.0,0.8,0.6,0.4,0.2] #Higher weights for lower layers
+    for i,layer in style_layers:
         style_features = style_output[layer]
         generated_style_features = generated_output[layer]
-        style_loss += compute_style_loss(style_features,generated_style_features)
+        layer_style_loss = compute_style_loss(style_features,generated_style_features)
+        style_loss += style_weights[i]*layer_style_loss
     tv_loss = compute_total_variation_loss(generated_img)
     return alpha*content_loss + beta*style_loss + gamma*tv_loss
 
@@ -113,11 +121,29 @@ def get_model():
     return tf.keras.Model(inputs=base_model.input, outputs=outputs)
 
 #enhance contrast after generation
-def enhance_contrast(img_array,factor=1.5):
+def enhance_contrast(img_array,factor=1.7):
     img = Image.fromarray(np.uint8(img_array))
-    enhancer = ImageEnhance.Contrast(img)
-    enhanced_img = enhancer.enhance(factor)
-    return np.array(enhanced_img)
+    img = ImageEnhance.Contrast(img).enhance(factor)
+    img = ImageEnhance.Sharpness(img).enhance(1.3)
+    img = ImageEnhance.Color(img).enhance(1.2)
+    return np.array(img)
+
+def sharpen_image(img_array):
+    """Apply a sharpening filter to enhance details"""
+    img = Image.fromarray(np.uint8(img_array))
+    img = img.filter(ImageFilter.SHARPEN)
+    return np.array(img)
+
+def denoise_image(img_array):
+    """Apply mild denoising to remove artifacts"""
+    # Convert to cv2 format
+    img = np.array(img_array).astype(np.uint8)
+    # Apply mild Gaussian blur to reduce noise
+    denoised = GaussianBlur(img, (3, 3), 0.5)
+    # Enhance details that might have been lost in blurring
+    enhanced = detailEnhance(denoised, sigma_s=10, sigma_r=0.15)
+    return enhanced
+
 
 def match_histograms(source, reference):
     # """
