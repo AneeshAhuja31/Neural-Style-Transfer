@@ -88,13 +88,14 @@ def compute_total_loss(model,content_img,style_img,generated_img,alpha=0.5,beta=
     content_output = model(content_img)
     style_output = model(style_img)
     generated_output = model(generated_img)
+
     content_features = content_output[content_layer]
     generated_content_features = generated_output[content_layer]
     content_loss = compute_content_loss(content_features,generated_content_features)
 
     style_loss = 0
     style_weights = [1.0,0.8,0.6,0.4,0.2] #Higher weights for lower layers
-    for i,layer in style_layers:
+    for i,layer in enumerate(style_layers):
         style_features = style_output[layer]
         generated_style_features = generated_output[layer]
         layer_style_loss = compute_style_loss(style_features,generated_style_features)
