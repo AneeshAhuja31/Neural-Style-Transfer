@@ -44,7 +44,7 @@ def main():
     #style_layers = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1','block5_conv1']
 
     generated_img = tf.Variable(content_img_preprocessed,dtype=tf.float32)
-    optimizer = tf.optimizers.Adam(learning_rate=10.0)
+    optimizer = tf.optimizers.Adam(learning_rate=5.0)
 
     batch_size = 5
     epochs = 30 # Reduce epochs for Streamlit deployment
