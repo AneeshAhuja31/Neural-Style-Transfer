@@ -27,7 +27,7 @@ def main():
   style_img_file = st.file_uploader("Upload Style Image",type=['jpg','jpeg','png'])
 
   if content_img_file is not None and style_img_file is not None:
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     content_img = Image.open(content_img_file).resize((IMAGE_SIZE,IMAGE_SIZE))
     style_img = Image.open(style_img_file).resize((IMAGE_SIZE,IMAGE_SIZE))
     with col1:
@@ -59,6 +59,9 @@ def main():
       progress_bar = st.progress(0)
       status_text = st.empty()
       preview_img = st.empty()
+      with col3:
+        st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in Progess..")
+
 
       for batch_start in range(0,epochs//2,batch_size):
         # tf.keras.backend.clear_session()
@@ -80,6 +83,7 @@ def main():
             if i % 5 == 0:
               preview = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
               preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
+
               #tf.keras.backend.clear_session()
           # except Exception as e:
           #   print(f"Error in iteration {i}: {e}")
