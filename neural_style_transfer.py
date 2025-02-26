@@ -129,13 +129,13 @@ def enhance_contrast(img_array,factor=1.7):
     return np.array(img)
 
 def sharpen_image(img_array):
-    """Apply a sharpening filter to enhance details"""
+    #"""Apply a sharpening filter to enhance details"""
     img = Image.fromarray(np.uint8(img_array))
     img = img.filter(ImageFilter.SHARPEN)
     return np.array(img)
 
 def denoise_image(img_array):
-    """Apply mild denoising to remove artifacts"""
+    #"""Apply mild denoising to remove artifacts"""
     # Convert to cv2 format
     img = np.array(img_array).astype(np.uint8)
     # Apply mild Gaussian blur to reduce noise
