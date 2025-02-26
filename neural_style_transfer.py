@@ -31,8 +31,16 @@ def load_preprocess_img(img_path):
         img = img.convert('RGB')
     img = img_to_array(img) 
     img = np.expand_dims(img,axis=0) # After adding batch dimension: (400, 400, 3) --> (1, 400, 400, 3)
-    img = vgg19.preprocess_input(img) #Normalize image for vgg19
-    return img
+    #img = vgg19.preprocess_input(img) #Normalize image for vgg19
+    #return img
+    # Manual preprocessing like VGG19
+    img_array = img_array.astype(np.float32)
+    img_array[:, :, :, 0] -= 103.939  # Subtract mean R
+    img_array[:, :, :, 1] -= 116.779  # Subtract mean G
+    img_array[:, :, :, 2] -= 123.68   # Subtract mean B
+    
+    # Note: VGG uses channels in BGR order, but we keep RGB for simplicity
+    return img_array
 
 
 def image_to_bytes(img,format="JPEG",quality=95):
@@ -60,12 +68,12 @@ def deprocess_img(img,rgb_or_rgba,original_alpha=None):
         img.putalpha(original_alpha_img)
     return img
 
-content_layer = 'block5_conv2' #deep layer that captures content features
-style_layers = ['block1_conv1','block2_conv1','block3_conv1'] #shallow and deep layers that capture different artistic details
-
+CONTENT_LAYERS = 'block5_conv2' #deep layer that captures content features
+STYLE_LAYERS = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1','block5_conv1'] #shallow and deep layers that capture different artistic details
+STYLE_WEIGHTS = [1.0, 0.8, 0.6, 0.4, 0.2]
 
 def compute_content_loss(content,generated):
-    return np.mean(np.square(content-generated)) #mena squared error
+    return tf.reduce_mean(tf.square(content-generated)) #mena squared error
 
 def gram_matrix(tensor):
     tensor = tf.squeeze(tensor,axis=0) # Remove batch dimension (1, H, W, C) → (H, W, C)
@@ -84,27 +92,42 @@ def compute_total_variation_loss(img):
     return tf.reduce_sum(tf.abs(x_variation)) + tf.reduce_sum(tf.abs(y_variation))
 
 def compute_total_loss(model,content_img,style_img,generated_img,alpha=0.5,beta=2e3,gamma=30):
-    #single fwd pass for each image:
-    content_output = model(content_img)
-    style_output = model(style_img)
-    generated_output = model(generated_img)
+    all_layers = [CONTENT_LAYERS]+STYLE_LAYERS
+    
+    outputs = model(content_img)
+    content_features = {layer:outputs[layer] for layer in all_layers if layer in outputs}
+    
+    outputs = model(style_img)
+    style_features = {layer:outputs[layer] for layer in all_layers if layer in outputs}
 
-    content_features = content_output[content_layer]
-    generated_content_features = generated_output[content_layer]
-    content_loss = compute_content_loss(content_features,generated_content_features)
+    outputs = model(generated_img)
+    generated_features = {layer:outputs[layer] for layer in all_layers if layer in outputs}
 
+    #content loss:
+    content_loss = compute_content_loss(
+        content_features[CONTENT_LAYERS],
+        generated_features[CONTENT_LAYERS]
+    )
+    #style loss
     style_loss = 0
-    style_weights = [1.0,0.8,0.6,0.4,0.2] #Higher weights for lower layers
-    for i,layer in enumerate(style_layers):
-        style_features = style_output[layer]
-        generated_style_features = generated_output[layer]
-        layer_style_loss = compute_style_loss(style_features,generated_style_features)
-        style_loss += style_weights[i]*layer_style_loss
+    for i,layer in enumerate(STYLE_LAYERS):
+        if layer in style_features and layer in generated_features:
+            layer_style_loss = compute_style_loss(
+                style_features[layer],
+                generated_features[layer]
+            )
+            style_loss+=STYLE_WEIGHTS[i]*layer_style_loss
+    
     tv_loss = compute_total_variation_loss(generated_img)
-    return alpha*content_loss + beta*style_loss + gamma*tv_loss
+    # Combine losses
+    total_loss = alpha * content_loss + beta * style_loss + gamma * tv_loss
+    
+    return total_loss
 
 # In model_creation.py or wherever your get_model function is defined
 def get_model():
+    #force eager execution to avoid name_scope issues
+    tf.config.run_functions_eagerly(True)
     # Set up a clean session
     tf.keras.backend.clear_session()
     
@@ -112,12 +135,7 @@ def get_model():
     base_model = vgg19.VGG19(weights='imagenet', include_top=False)
     
     # Create output dictionary for each layer
-    outputs = {}
-    layer_names = [content_layer] + style_layers
-    
-    for layer_name in layer_names:
-        outputs[layer_name] = base_model.get_layer(layer_name).output
-    
+    outputs = {layer.name:layer.output for layer in base_model.layers}    
     # Create and return the model
     return tf.keras.Model(inputs=base_model.input, outputs=outputs)
 

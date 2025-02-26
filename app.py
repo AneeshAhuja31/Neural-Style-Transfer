@@ -73,13 +73,13 @@ def main():
           if i % 5 == 0:
             preview = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
             preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
-            tf.keras.backend.clear_session()
+            #tf.keras.backend.clear_session()
         # except Exception as e:
         #   print(f"Error in iteration {i}: {e}")
         #   continue
     for batch_start in range(epochs//2,epochs,batch_size):
-      tf.keras.backend.clear_session()
-      model = load_model()
+      #tf.keras.backend.clear_session()
+      #model = load_model()
       batch_end = min(batch_start + batch_size,epochs)
       for i in range(batch_start,batch_end):
         # try:
