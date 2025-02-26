@@ -78,14 +78,18 @@ def compute_total_variation_loss(img):
     return tf.reduce_sum(tf.abs(x_variation)) + tf.reduce_sum(tf.abs(y_variation))
 
 def compute_total_loss(model,content_img,style_img,generated_img,alpha=0.5,beta=2e3,gamma=30):
-    content_features = model(content_img)[content_layer]
-    generated_content_features = model(generated_img)[content_layer]
+    #single fwd pass for each image:
+    content_output = model(content_img)
+    style_output = model(style_img)
+    generated_output = model(generated_img)
+    content_features = content_output[content_layer]
+    generated_content_features = generated_output[content_layer]
     content_loss = compute_content_loss(content_features,generated_content_features)
 
     style_loss = 0
     for layer in style_layers:
-        style_features = model(style_img)[layer]
-        generated_style_features = model(generated_img)[layer]
+        style_features = style_output[layer]
+        generated_style_features = generated_output[layer]
         style_loss += compute_style_loss(style_features,generated_style_features)
     tv_loss = compute_total_variation_loss(generated_img)
     return alpha*content_loss + beta*style_loss + gamma*tv_loss

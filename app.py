@@ -56,13 +56,14 @@ def main():
         loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.2, beta=3e3)
       grad = tape.gradient(loss, generated_img)
       optimizer.apply_gradients([(grad, generated_img)])
-
-    # Clear memory
+    
       print(f"Iteration {i}, loss: {loss.numpy()}")
-      if i % 10 == 0:
+      progress_bar.progress((i+1)/epochs)
+      status_text.text(f"Iteration {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
+
+      # Clear memory
+      if i % 5 == 0:
         tf.keras.backend.clear_session()
-        progress_bar.progress((i+1)/epochs)
-        status_text.text(f"Iteration {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
     
     for i in range(25,50):
       with tf.GradientTape() as tape:
@@ -72,10 +73,10 @@ def main():
       optimizer.apply_gradients([(grad,generated_img)])
       
       print(f"Refinement phase: {i}, loss: {loss.numpy()}")
-      if i%10==0:
-         tf.keras.backend.clear_session()
-         progress_bar.progress((i+1)/epochs)
-         status_text.text(f"Refinement phase: {i+1}/100, Loss: {loss.numpy():.2f}")
+      progress_bar.progress((i+1)/epochs)
+      status_text.text(f"Refinement phase: {i+1}/100, Loss: {loss.numpy():.2f}")
+      if i % 5 == 0:
+        tf.keras.backend.clear_session()
     
     final_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
     #Apply style color matching
