@@ -15,7 +15,7 @@ from keras.api.preprocessing.image import load_img,img_to_array
 from io import BytesIO
 from PIL import Image,ImageEnhance, ImageFilter
 
-IMAGE_SIZE = 512
+IMAGE_SIZE = 400
 
 def load_preprocess_img(img_path):
     if isinstance(img_path,Image.Image):

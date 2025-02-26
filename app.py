@@ -15,7 +15,7 @@ if len(physical_devices) > 0:
 
 from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss,enhance_contrast,match_histograms,get_model,np#,sharpen_image,denoise_image,np
 
-IMAGE_SIZE = 512
+IMAGE_SIZE = 400
 @st.cache_resource
 def load_model():
    return get_model()
