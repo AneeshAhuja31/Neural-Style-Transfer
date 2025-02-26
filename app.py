@@ -82,9 +82,7 @@ def main():
             if i % 5 == 0:
               preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
               #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
-              preview_placeholder.empty()
-              with col3:
-                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
+              preview_placeholder.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
 
               #tf.keras.backend.clear_session()
           # except Exception as e:
@@ -109,10 +107,7 @@ def main():
             if i % 5 == 0:
               preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
               #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
-              preview_placeholder.empty()
-              with col3:
-                st.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
-
+              preview_placeholder.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
           # except Exception as e:
           #   print(f"Error in iteration {i}: {e}")
           #   continue
