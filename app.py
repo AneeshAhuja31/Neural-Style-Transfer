@@ -13,12 +13,12 @@ physical_devices = tf.config.list_physical_devices('GPU')
 if len(physical_devices) > 0:
     tf.config.set_visible_devices([], 'GPU')
 
-from model_creation import get_model
+from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss,enhance_contrast,match_histograms,get_model,np
+
 @st.cache_resource
 def load_model():
    return get_model()
 
-from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss,enhance_contrast,match_histograms,np
 def main():
   st.title("Neural Style Transfer")
   content_img_file = st.file_uploader("Upload Content Image",type=['jpg','jpeg','png'])
@@ -46,37 +46,48 @@ def main():
     generated_img = tf.Variable(content_img_preprocessed,dtype=tf.float32)
     optimizer = tf.optimizers.Adam(learning_rate=5.0)
 
+    batch_size = 5
     epochs = 50 # Reduce epochs for Streamlit deployment
-    first_phase_epochs = 25
     progress_bar = st.progress(0)
     status_text = st.empty()
 
-    for i in range(first_phase_epochs):
-      with tf.GradientTape() as tape:
-        loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.2, beta=3e3)
-      grad = tape.gradient(loss, generated_img)
-      optimizer.apply_gradients([(grad, generated_img)])
-    
-      print(f"Iteration {i}, loss: {loss.numpy()}")
-      progress_bar.progress((i+1)/epochs)
-      status_text.text(f"Iteration {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
+    for batch_start in range(0,epochs/2,batch_size):
+      tf.keras.backend.clear_session()
+      model = load_model()
+      batch_end = min(batch_start+batch_size,epochs/2)
+      for i in range(batch_start,batch_end):
+        try:
+          with tf.GradientTape() as tape:
+            loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.2, beta=3e3)
+          grad = tape.gradient(loss, generated_img)
+          optimizer.apply_gradients([(grad, generated_img)])
+        
+          print(f"Iteration {i}, loss: {loss.numpy()}")
+          progress_bar.progress((i+1)/epochs)
+          status_text.text(f"Iteration {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
 
-      # Clear memory
-      if i % 5 == 0:
-        tf.keras.backend.clear_session()
-    
-    for i in range(25,50):
-      with tf.GradientTape() as tape:
-        loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.8,beta=1e3)
+          # Clear memory
+          if i % 5 == 0:
+            tf.keras.backend.clear_session()
+        except Exception as e:
+          print(f"Error in iteration {i}: {e}")
+          continue
+    for batch_start in range(epochs/2,epochs,batch_size):
+      tf.keras.backend.clear_session()
+      model = load_model()
+      batch_end = min(batch_start + batch_size,epochs)
+      for i in range(batch_start,batch_end):
+        with tf.GradientTape() as tape:
+          loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.8,beta=1e3)
 
-      grad = tape.gradient(loss,generated_img)
-      optimizer.apply_gradients([(grad,generated_img)])
-      
-      print(f"Refinement phase: {i}, loss: {loss.numpy()}")
-      progress_bar.progress((i+1)/epochs)
-      status_text.text(f"Refinement phase: {i+1}/100, Loss: {loss.numpy():.2f}")
-      if i % 5 == 0:
-        tf.keras.backend.clear_session()
+        grad = tape.gradient(loss,generated_img)
+        optimizer.apply_gradients([(grad,generated_img)])
+        
+        print(f"Refinement phase: {i}, loss: {loss.numpy()}")
+        progress_bar.progress((i+1)/epochs)
+        status_text.text(f"Refinement phase: {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
+        if i % 5 == 0:
+          tf.keras.backend.clear_session()
     
     final_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
     #Apply style color matching

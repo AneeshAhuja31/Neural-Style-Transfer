@@ -94,6 +94,24 @@ def compute_total_loss(model,content_img,style_img,generated_img,alpha=0.5,beta=
     tv_loss = compute_total_variation_loss(generated_img)
     return alpha*content_loss + beta*style_loss + gamma*tv_loss
 
+# In model_creation.py or wherever your get_model function is defined
+def get_model():
+    # Set up a clean session
+    tf.keras.backend.clear_session()
+    
+    # Load VGG19 with clean initialization
+    base_model = vgg19.VGG19(weights='imagenet', include_top=False)
+    
+    # Create output dictionary for each layer
+    outputs = {}
+    layer_names = [content_layer] + style_layers
+    
+    for layer_name in layer_names:
+        outputs[layer_name] = base_model.get_layer(layer_name).output
+    
+    # Create and return the model
+    return tf.keras.Model(inputs=base_model.input, outputs=outputs)
+
 #enhance contrast after generation
 def enhance_contrast(img_array,factor=1.5):
     img = Image.fromarray(np.uint8(img_array))
