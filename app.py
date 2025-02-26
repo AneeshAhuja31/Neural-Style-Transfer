@@ -58,7 +58,7 @@ def main():
       model = load_model()
       batch_end = min(batch_start+batch_size,epochs//2)
       for i in range(batch_start,batch_end):
-        try:
+        #try:
           with tf.GradientTape() as tape:
             gamma = max(30 - (i//5),10)
             loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.1, beta=5e3,gamma=gamma)
@@ -74,15 +74,15 @@ def main():
             preview = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
             preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
             tf.keras.backend.clear_session()
-        except Exception as e:
-          print(f"Error in iteration {i}: {e}")
-          continue
+        # except Exception as e:
+        #   print(f"Error in iteration {i}: {e}")
+        #   continue
     for batch_start in range(epochs//2,epochs,batch_size):
       tf.keras.backend.clear_session()
       model = load_model()
       batch_end = min(batch_start + batch_size,epochs)
       for i in range(batch_start,batch_end):
-        try:
+        # try:
           with tf.GradientTape() as tape:
             gamma = max(30-(i//5),10)
             loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=1.0,beta=2e3,gamma=gamma)
@@ -97,9 +97,9 @@ def main():
             preview = deprocess_img(generated_img.numpy(), rgb_or_rgba, original_alpha)
             preview_img.image(preview, caption="Preview (Refinement)", use_container_width=True)
             tf.keras.backend.clear_session()
-        except Exception as e:
-          print(f"Error in iteration {i}: {e}")
-          continue
+        # except Exception as e:
+        #   print(f"Error in iteration {i}: {e}")
+        #   continue
     
     final_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
     #Apply style color matching
