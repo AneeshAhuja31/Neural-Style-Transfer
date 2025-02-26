@@ -51,10 +51,10 @@ def main():
     progress_bar = st.progress(0)
     status_text = st.empty()
 
-    for batch_start in range(0,epochs//2,batch_size):
+    for batch_start in range(0,25,batch_size):
       tf.keras.backend.clear_session()
       model = load_model()
-      batch_end = min(batch_start+batch_size,epochs/2)
+      batch_end = min(batch_start+batch_size,25)
       for i in range(batch_start,batch_end):
         try:
           with tf.GradientTape() as tape:
@@ -72,10 +72,10 @@ def main():
         except Exception as e:
           print(f"Error in iteration {i}: {e}")
           continue
-    for batch_start in range(0,epochs//2,epochs,batch_size):
+    for batch_start in range(25,50,batch_size):
       tf.keras.backend.clear_session()
       model = load_model()
-      batch_end = min(batch_start + batch_size,epochs)
+      batch_end = min(batch_start + batch_size,50)
       for i in range(batch_start,batch_end):
         try:
           with tf.GradientTape() as tape:
