@@ -13,7 +13,7 @@ physical_devices = tf.config.list_physical_devices('GPU')
 if len(physical_devices) > 0:
     tf.config.set_visible_devices([], 'GPU')
 
-from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss,enhance_contrast,match_histograms,get_model,sharpen_image,denoise_image,np
+from neural_style_transfer import load_preprocess_img,deprocess_img,image_to_bytes,compute_total_loss,enhance_contrast,match_histograms,get_model,np#,sharpen_image,denoise_image,np
 
 IMAGE_SIZE = 512
 @st.cache_resource
@@ -112,8 +112,8 @@ def main():
 
     #Enhance contrast
     final_img_arr_enhanced = enhance_contrast(final_img_arr,factor=1.7)
-    final_img_arr_enhanced = sharpen_image(final_img_arr_enhanced)
-    final_img_arr_enhanced = denoise_image(final_img_arr_enhanced)
+    # final_img_arr_enhanced = sharpen_image(final_img_arr_enhanced)
+    # final_img_arr_enhanced = denoise_image(final_img_arr_enhanced)
     final_img = Image.fromarray(final_img_arr_enhanced)
     if rgb_or_rgba and original_alpha is not None:
        alpha_img = Image.fromarray(original_alpha,'L')
