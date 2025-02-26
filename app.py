@@ -48,7 +48,7 @@ def main():
     optimizer = tf.optimizers.Adam(learning_rate=5.0)
 
     batch_size = 5
-    epochs = 30 # Reduce epochs for Streamlit deployment
+    epochs = 20 # Reduce epochs for Streamlit deployment
     progress_bar = st.progress(0)
     status_text = st.empty()
     preview_img = st.empty()
