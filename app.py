@@ -96,7 +96,7 @@ def main():
           # try:
             with tf.GradientTape() as tape:
               gamma = max(30-(i//5),10)
-              loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=1.0,beta=5e3,gamma=gamma)
+              loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.1,beta=5e3,gamma=gamma)
 
             grad = tape.gradient(loss,generated_img)
             optimizer.apply_gradients([(grad,generated_img)])
