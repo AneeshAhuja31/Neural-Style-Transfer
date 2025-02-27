@@ -63,7 +63,7 @@ def main():
       preview_placeholder = col3.empty()  # Create an empty placeholder for preview image
 
       for batch_start in range(0,epochs//2,batch_size):
-        # tf.keras.backend.clear_session()
+        tf.keras.backend.clear_session()
         # model = load_model()
         batch_end = min(batch_start+batch_size,epochs//2)
         for i in range(batch_start,batch_end):
@@ -89,7 +89,7 @@ def main():
           #   print(f"Error in iteration {i}: {e}")
           #   continue
       for batch_start in range(epochs//2,epochs,batch_size):
-        #tf.keras.backend.clear_session()
+        tf.keras.backend.clear_session()
         #model = load_model()
         batch_end = min(batch_start + batch_size,epochs)
         for i in range(batch_start,batch_end):
