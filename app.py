@@ -55,7 +55,7 @@ def main():
       optimizer = tf.optimizers.Adam(learning_rate=10.0)
 
       batch_size = 5
-      epochs = 20 # Reduce epochs for Streamlit deployment
+      epochs = 40 # Reduce epochs for Streamlit deployment
       progress_bar = st.progress(0)
       status_text = st.empty()
       # preview_img = st.empty()
@@ -84,33 +84,27 @@ def main():
               #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
               preview_placeholder.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
 
-              #tf.keras.backend.clear_session()
-          # except Exception as e:
-          #   print(f"Error in iteration {i}: {e}")
-          #   continue
-      for batch_start in range(epochs//2,epochs,batch_size):
-        tf.keras.backend.clear_session()
-        #model = load_model()
-        batch_end = min(batch_start + batch_size,epochs)
-        for i in range(batch_start,batch_end):
-          # try:
-            with tf.GradientTape() as tape:
-              gamma = max(30-(i//5),10)
-              loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.1,beta=5e3,gamma=gamma)
+      # for batch_start in range(epochs//2,epochs,batch_size):
+      #   tf.keras.backend.clear_session()
+      #   #model = load_model()
+      #   batch_end = min(batch_start + batch_size,epochs)
+      #   for i in range(batch_start,batch_end):
+      #     # try:
+      #       with tf.GradientTape() as tape:
+      #         gamma = max(30-(i//5),10)
+      #         loss = compute_total_loss(model,content_img_preprocessed,style_img_preprocessed,generated_img,alpha=0.1,beta=5e3,gamma=gamma)
 
-            grad = tape.gradient(loss,generated_img)
-            optimizer.apply_gradients([(grad,generated_img)])
+      #       grad = tape.gradient(loss,generated_img)
+      #       optimizer.apply_gradients([(grad,generated_img)])
             
-            print(f"Refinement phase: {i}, loss: {loss.numpy()}")
-            progress_bar.progress((i+1)/epochs)
-            status_text.text(f"Refinement phase: {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
-            if i % 5 == 0:
-              preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
-              #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
-              preview_placeholder.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
-          # except Exception as e:
-          #   print(f"Error in iteration {i}: {e}")
-          #   continue
+      #       print(f"Refinement phase: {i}, loss: {loss.numpy()}")
+      #       progress_bar.progress((i+1)/epochs)
+      #       status_text.text(f"Refinement phase: {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
+      #       if i % 5 == 0:
+      #         preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
+      #         #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
+      #         preview_placeholder.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
+          
       
       final_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
       #Apply style color matching
