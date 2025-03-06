@@ -1,8 +1,7 @@
 import os
-# Force CPU usage - place this at the very beginning before other imports
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  # Disable GPU
-os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "false"  # Prevent memory allocation errors
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress TensorFlow warnings
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"  
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "false"  
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3" 
 
 import streamlit as st
 from PIL import Image
@@ -48,8 +47,6 @@ def main():
       style_img_preprocessed = load_preprocess_img(style_img)
 
       model = load_model()
-      #content_layer = 'block5_conv2'
-      #style_layers = ['block1_conv1','block2_conv1','block3_conv1','block4_conv1','block5_conv1']
 
       generated_img = tf.Variable(content_img_preprocessed,dtype=tf.float32)
       optimizer = tf.optimizers.Adam(learning_rate=10.0)
@@ -64,25 +61,22 @@ def main():
 
       for batch_start in range(0,epochs//2,batch_size):
         tf.keras.backend.clear_session()
-        # model = load_model()
+        
         batch_end = min(batch_start+batch_size,epochs//2)
         for i in range(batch_start,batch_end):
-          #try:
-            with tf.GradientTape() as tape:
-              gamma = max(30 - (i//5),10)
-              loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.01, beta=20e3,gamma=gamma)
-            grad = tape.gradient(loss, generated_img)
-            optimizer.apply_gradients([(grad, generated_img)])
-          
-            print(f"Iteration {i}, loss: {loss.numpy()}")
-            progress_bar.progress((i+1)/epochs)
-            status_text.text(f"Iteration {i+1}/{epochs}, Loss: {loss.numpy():.2f}")
+          with tf.GradientTape() as tape:
+            gamma = max(30 - (i//5),10)
+            loss = compute_total_loss(model, content_img_preprocessed, style_img_preprocessed, generated_img,alpha=0.01, beta=20e3,gamma=gamma)
+          grad = tape.gradient(loss, generated_img)
+          optimizer.apply_gradients([(grad, generated_img)])
+        
+          print(f"Iteration {i}, loss: {loss.numpy()}")
+          progress_bar.progress((i+1)/epochs//2)
+          status_text.text(f"Iteration {i+1}/{epochs//2}, Loss: {loss.numpy():.2f}")
 
-            # Clear memory
-            if i % 5 == 0:
-              preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
-              #preview_img.image(preview,caption="Preview (in progress)",use_container_width=True)
-              preview_placeholder.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
+          if i % 5 == 0:
+            preview_img = deprocess_img(generated_img.numpy(),rgb_or_rgba,original_alpha)
+            preview_placeholder.image(preview_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Image in progress...")
 
       # for batch_start in range(epochs//2,epochs,batch_size):
       #   tf.keras.backend.clear_session()
@@ -129,7 +123,6 @@ def main():
       preview_placeholder.empty()
       with col3:
         st.image(final_img.resize((PREVIEW_SIZE, PREVIEW_SIZE)), caption="Result Image")
-      #st.image(final_img,caption="Generated Image",use_container_width=True)
       format_type = "PNG" if rgb_or_rgba else "JPEG"
       st.download_button(
         label="Download Generated Image",
@@ -139,4 +132,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

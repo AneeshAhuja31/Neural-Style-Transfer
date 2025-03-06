@@ -9,9 +9,8 @@ from cv2 import (
     cvtColor, calcHist, LUT, COLOR_RGB2LAB, COLOR_LAB2RGB,
     split, merge, HISTCMP_CORREL, GaussianBlur, detailEnhance
 )
-from keras.api.applications import vgg19  #pretrained VGG19 model
+from keras.api.applications import vgg19  
 from keras.api.preprocessing.image import load_img,img_to_array
-# from keras.api.models import Model
 from io import BytesIO
 from PIL import Image,ImageEnhance, ImageFilter
 
@@ -21,7 +20,7 @@ def load_preprocess_img(img_path):
     if isinstance(img_path,Image.Image):
         img = img_path.resize((400,400))
     else:
-        img = load_img(img_path,target_size=(400,400)) #load img and convert t0 400x400
+        img = load_img(img_path,target_size=(400,400)) 
 
      # Convert grayscale to RGB if needed
     if img.mode not in ['RGB', 'RGBA']:
@@ -31,8 +30,7 @@ def load_preprocess_img(img_path):
         img = img.convert('RGB')
     img = img_to_array(img) 
     img = np.expand_dims(img,axis=0) # After adding batch dimension: (400, 400, 3) --> (1, 400, 400, 3)
-    #img = vgg19.preprocess_input(img) #Normalize image for vgg19
-    #return img
+    
     # Manual preprocessing like VGG19
     img_array = img.astype(np.float32)
     img_array[:, :, :, 0] -= 103.939  # Subtract mean R
